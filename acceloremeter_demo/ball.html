@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="viewport" content="width=device-width,user-scalable=yes" />
+<style>
+body {
+  font-family: helvetica, arial, sans serif;
+}
+.sphere {
+  position: absolute; 
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+}
+
+.blue {
+  background-color : blue;
+}
+
+.red {
+  background-color : red;
+}
+
+.yellow {
+  background-color : yellow;
+}
+
+.orange {
+  background-color : orange;
+}
+</style>
+</head>
+
+<body>
+<div id="content">
+<!--    <h1>Accelerometer Javascript Test</h1>
+    <div id="sphere"></div>
+<ul>
+  <li>acceleration x: <span id="accelerationX"></span>g</li>
+  <li>acceleration y: <span id="accelerationY"></span>g</li>
+  <li>acceleration z: <span id="accelerationZ"></span>g</li>
+</ul> -->
+</div>
+<script type="text/javascript">
+var content = document.getElementById('content');
+
+function createSphere(id, color) {
+  var div = document.createElement('div');
+  div.classList.add('sphere');
+  div.classList.add(color);
+  
+  content.appendChild(div);
+  
+  return {
+    id: id,
+	element: div,
+	x: 100,
+	y: 100,
+	vx: 0,
+	vy: 0,
+  };
+}
+  
+var spheres = {};
+
+var accelerationWebSocket = new WebSocket('ws://' + window.location.hostname + ':9090');
+//var accelerationWebSocket = new WebSocket('ws://127.0.0.1:9090');
+
+accelerationWebSocket.onmessage = function(event) {
+  var message = JSON.parse(event.data);
+  if (!message.length) return;
+	
+  for (var i=0; i < message.length; i++) {
+    var sp = message[i];
+	
+	if (!spheres.hasOwnProperty(sp.id)) {
+	  spheres[sp.id] = createSphere(sp.id, sp.color);
+	}
+	var sphere = spheres[sp.id];
+	
+	sphere.ay = sp.x;
+	sphere.ax = -sp.y;
+  }
+
+  //document.getElementById("accelerationX").innerHTML = message[0].x;
+  //document.getElementById("accelerationY").innerHTML = message[0].y;
+  //document.getElementById("accelerationZ").innerHTML = message[0].z;
+};
+
+
+setInterval( function() {
+  var landscapeOrientation = window.innerWidth/window.innerHeight > 1;
+  for (var id in spheres) {
+    var sphere = spheres[id];
+    if ( landscapeOrientation) {
+      sphere.vx = sphere.vx + sphere.ay;
+      sphere.vy = sphere.vy + sphere.ax;
+    } else {
+      sphere.vy = sphere.vy - sphere.ay;
+      sphere.vx = sphere.vx + sphere.ax;
+    }
+    sphere.vx = sphere.vx * 0.98;
+    sphere.vy = sphere.vy * 0.98;
+    sphere.y = parseInt(sphere.y + sphere.vy / 50);
+    sphere.x = parseInt(sphere.x + sphere.vx / 50);
+  
+    boundingBoxCheck(sphere);
+  
+    sphere.element.style.top = sphere.y + "px";
+    sphere.element.style.left = sphere.x + "px";
+  }
+}, 25);
+
+
+function boundingBoxCheck(sphere){
+  if (sphere.x<0) { sphere.x = 0; sphere.vx = -sphere.vx; }
+  if (sphere.y<0) { sphere.y = 0; sphere.vy = -sphere.vy; }
+  if (sphere.x>document.documentElement.clientWidth-20) { sphere.x = document.documentElement.clientWidth-20; sphere.vx = -sphere.vx; }
+  if (sphere.y>document.documentElement.clientHeight-20) { sphere.y = document.documentElement.clientHeight-20; sphere.vy = -sphere.vy; }
+  
+}
+
+</script>
+
+</body>
+</html>
