@@ -1,7 +1,7 @@
 nodeconf.is
 ===========
 
-My presenstation & demos from the <a href="http://www.nodeconf.co.il" target="_blank>nodeconf.is</a> confrence:
+My presenstation & demos from the <a href="http://www.nodeconf.co.il" target="_blank">nodeconf.is</a> confrence:
 
  - Presenatation is available here: <a href="http://slides.com/nadavbar/nodert" target="_blank">http://slides.com/nadavbar/nodert</a>
 
